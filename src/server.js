@@ -4,9 +4,13 @@ import 'babel/polyfill';
 import _ from 'lodash';
 import fs from 'fs';
 import path from 'path';
+import readline from 'readline';
+import child from 'child_process';
 import express from 'express';
 import ReactDOM from 'react-dom/server';
 import Router from './Router';
+import multer from 'multer';
+var upload = multer({dest: '/tmp/uploads'});
 
 const server = global.server = express();
 
@@ -17,6 +21,53 @@ server.use(express.static(path.join(__dirname, 'public')));
 // Register API middleware
 // -----------------------------------------------------------------------------
 server.use('/api/content', require('./api/content'));
+
+server.get('/shapefile/:id/:filename', function(req, res){
+  var filepath = '/tmp/' + req.params.id + '/' + req.params.filename;
+  res.attachment(filepath);
+  res.download(filepath);
+});
+
+server.post('/shp2pgsql_upload', upload.array('shapefile', {maxCount: 10}), function(req, res){
+  let shpfilepath = '';
+  let originalshpname = '';
+  let uid = '';
+  for (let file of req.files) {
+    let ext = path.extname(file.originalname);
+    if (uid == '') uid = file.filename;
+    let newpath = path.resolve(file.destination, uid + ext);
+    fs.renameSync(file.path, newpath);
+    if (ext === '.shp') {
+      originalshpname = file.originalname;
+      shpfilepath = newpath;
+    }
+  }
+  if (originalshpname == '') {
+    return res.status(500).send('a shapefile with the extension .shp must be sent.');
+  }
+  fs.mkdirSync('/tmp/' + uid);
+  let pgsqloutpath = '/tmp/' + uid + '/' + path.basename(originalshpname, '.shp') + '.sql';
+  let pgsqlout = fs.createWriteStream(pgsqloutpath);
+  
+  let spawn = child.spawn('shp2pgsql', [shpfilepath]);
+  spawn.stdout.pipe(pgsqlout);
+  spawn.on('close', function (code) {
+    console.log('spawn exited with code : ' + code);
+    pgsqlout.end();
+    if (code === 0) {
+      res.set('Shapefile-Location', '/shapefile/' + uid + '/' + path.basename(originalshpname, '.shp') + '.sql');
+      res.send();
+    } else {
+      fs.unlink(pgsqloutpath);
+      res.status(500).send('shp2pgsql exited with code ' + code);
+    }
+  });
+  spawn.on('error', function(err){
+    console.log('shp2pgsql spawn error:');
+    console.log(err);
+    res.status(500).send('shp2pgsql encountered an error.');
+  });
+});
 
 //
 // Register server-side rendering middleware

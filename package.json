@@ -18,9 +18,11 @@
     "history": "1.8.1",
     "jade": "1.11.0",
     "lodash": "3.10.1",
+    "multer": "^1.0.3",
     "normalize.css": "3.0.3",
     "react": "0.14.0-beta3",
     "react-dom": "0.14.0-beta3",
+    "react-dropzone": "^2.0.1",
     "react-leaflet": "git://github.com/PaulLeCam/react-leaflet.git#react-update",
     "react-routing": "0.0.4",
     "source-map-support": "0.3.2",
@@ -74,6 +76,7 @@
     "bundle": "babel-node --eval \"require('./tools/bundle')().catch(err => console.log(err.stack))\"",
     "build": "babel-node --eval \"require('./tools/build')().catch(err => console.log(err.stack))\"",
     "serve": "babel-node --eval \"require('./tools/serve')().catch(err => console.log(err.stack))\"",
+    "instart": "npm install; babel-node --eval \"require('./tools/start')().catch(err => console.log(err.stack))\"",
     "start": "babel-node --eval \"require('./tools/start')().catch(err => console.log(err.stack))\""
   }
 }

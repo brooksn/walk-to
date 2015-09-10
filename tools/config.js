@@ -176,4 +176,6 @@ const serverConfig = merge({}, config, {
   }
 });
 
+//appConfig.plugins.push();
+
 export default [appConfig, serverConfig];

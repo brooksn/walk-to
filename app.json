@@ -1,0 +1,7 @@
+{
+  "name": "walk-to",
+  "description": "Convert shapefiles to postgres queries. Try to make some useful inferences about path accesibility.",
+  "repository": "https://github.com/brooksn/walk-to",
+  "logo": "http://node-js-sample.herokuapp.com/node.svg",
+  "image": "heroku/nodejs"
+}
